@@ -63,10 +63,10 @@ Configure **Settings → Pages → Source** to use the `gh-pages` branch (or Git
 ## Tech Stack
 
 - **React 18** + TypeScript
-- **Three.js** — WebGL rendering, EffectComposer, UnrealBloomPass
-- **Vite** — Build tooling
-- **Tailwind CSS** — Styling
-- **Web Audio API** — Mic input, FFT analysis, file playback
+- **Three.js** - WebGL rendering, EffectComposer, UnrealBloomPass
+- **Vite** - Build tooling
+- **Tailwind CSS** - Styling
+- **Web Audio API** - Mic input, FFT analysis, file playback
 
 ---
 
