@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 6%;
+    --foreground: 185 80% 55%;
+    --muted: 222 20% 15%;
+    --muted-foreground: 215 16% 47%;
+    --border: 215 20% 18%;
+    --primary: 185 80% 55%;
+  }
+}
+
+body {
+  @apply bg-[hsl(var(--background))] text-white antialiased;
+}
+
+/* Dark select dropdown (native option styling varies by browser) */
+select option {
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+/* Fullscreen: fill screen, no bar at bottom */
+:fullscreen,
+:-webkit-full-screen,
+:-moz-full-screen {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
