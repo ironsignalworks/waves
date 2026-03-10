@@ -70,9 +70,9 @@ export const ControlBar = memo(function ControlBar({
   }, [isModeMenuOpen])
 
   return (
-    <div className="absolute bottom-4 left-4 right-4 flex justify-center z-10">
-      <div className="flex items-center gap-4 px-4 py-3 rounded-xl bg-black/40 backdrop-blur-sm border border-white/10">
-        <div className="flex items-center gap-2">
+    <div className="absolute inset-x-3 bottom-3 sm:inset-x-4 sm:bottom-4 flex justify-center z-10 pointer-events-none">
+      <div className="pointer-events-auto w-full max-w-xl sm:max-w-3xl flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-black/60 backdrop-blur-sm border border-white/10">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
           <button
             onClick={onToggleMic}
             disabled={inputSource === 'file'}
@@ -100,23 +100,23 @@ export const ControlBar = memo(function ControlBar({
           />
         </div>
         {inputSource === 'file' && (
-          <>
+          <div className="flex items-center gap-2 text-xs sm:text-[13px] font-mono text-gray-300 w-full sm:w-auto justify-between sm:justify-start">
             <button
               onClick={onTogglePlayPause}
-              className="px-2 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-sm"
+              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs sm:text-sm"
             >
               {isPlaying ? 'Pause' : 'Play'}
             </button>
-            <span className="text-xs font-mono text-gray-400">
+            <span className="whitespace-nowrap">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
-          </>
+          </div>
         )}
-        <div className="relative" ref={modeMenuRef}>
+        <div className="relative w-full sm:w-auto" ref={modeMenuRef}>
           <button
             type="button"
             onClick={() => setIsModeMenuOpen((open) => !open)}
-            className="min-w-[170px] flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg bg-black/40 text-white text-sm font-mono border border-white/10 hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-white/30 focus:border-white/30 transition-colors"
+            className="w-full sm:min-w-[170px] flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg bg-black/40 text-white text-xs sm:text-sm font-mono border border-white/10 hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-white/30 focus:border-white/30 transition-colors"
             aria-haspopup="listbox"
             aria-expanded={isModeMenuOpen}
             aria-label="Select visualization mode"
@@ -140,7 +140,7 @@ export const ControlBar = memo(function ControlBar({
             <div
               role="listbox"
               aria-label="Visualization modes"
-              className="absolute left-0 bottom-full mb-2 z-30 min-w-[170px] max-h-64 overflow-auto rounded-lg bg-black/85 backdrop-blur-sm border border-white/10 p-1 shadow-xl"
+              className="absolute left-0 right-0 sm:right-auto bottom-full mb-2 z-30 min-w-[170px] max-h-64 overflow-auto rounded-lg bg-black/90 backdrop-blur-sm border border-white/10 p-1 shadow-xl"
             >
               {modes.map(([id, { label }]) => {
                 const isActive = id === mode
@@ -165,21 +165,23 @@ export const ControlBar = memo(function ControlBar({
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-mono text-gray-400">Vol</label>
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+          <label className="text-[11px] sm:text-xs font-mono text-gray-400">Vol</label>
           <input
             type="range"
             min={0}
             max={100}
             value={volume * 100}
             onChange={(e) => onSetVolume(Number(e.target.value) / 100)}
-            className="w-20 h-1 rounded-full bg-white/20 accent-green-500"
+            className="w-24 sm:w-20 h-1 rounded-full bg-white/20 accent-green-500"
           />
-          <span className="text-xs font-mono w-8">{Math.round(volume * 100)}</span>
+          <span className="text-[11px] sm:text-xs font-mono w-8 text-right">
+            {Math.round(volume * 100)}
+          </span>
         </div>
         <button
           onClick={onToggleFullscreen}
-          className="p-2 rounded-lg bg-white/10 hover:bg-white/20"
+          className="p-2 rounded-lg bg-white/10 hover:bg-white/20 flex-shrink-0"
           title={isFullscreen ? 'Exit fullscreen (ESC)' : 'Fullscreen'}
           aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
         >
@@ -191,7 +193,7 @@ export const ControlBar = memo(function ControlBar({
         </button>
         <button
           onClick={onReset}
-          className="px-2 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-sm"
+          className="px-2 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs sm:text-sm flex-shrink-0"
           title="Reset"
         >
           Reset

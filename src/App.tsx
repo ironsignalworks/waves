@@ -55,17 +55,18 @@ function App() {
         inputSource={audio.inputSource}
       />
       {!isFullscreen && (
-      <header className="absolute top-0 left-0 right-0 z-10 p-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-sm font-mono font-semibold text-white">Waves</h1>
-          <span className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">
-            Audio-Reactive Visualizer
+        <header className="absolute top-0 left-0 right-0 z-10 px-3 py-3 sm:px-4 sm:py-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-sm sm:text-base font-mono font-semibold text-white">Waves</h1>
+            <span className="text-[10px] sm:text-xs font-mono text-gray-500 uppercase tracking-wider">
+              Audio-Reactive Visualizer
+            </span>
+          </div>
+          <span className="text-[11px] sm:text-xs font-mono text-gray-500 mt-1 sm:mt-0">
+            {audio.inputSource === 'mic' ? 'Mic' : audio.inputSource === 'file' ? 'File' : 'None'} ·{' '}
+            {audio.isPlaying ? 'Playing' : 'Idle'}
           </span>
-        </div>
-        <span className="text-xs font-mono text-gray-500">
-          {audio.inputSource === 'mic' ? 'Mic' : audio.inputSource === 'file' ? 'File' : 'None'} · {audio.isPlaying ? 'Playing' : 'Idle'}
-        </span>
-      </header>
+        </header>
       )}
       {!isFullscreen && (
       <ControlBar
