@@ -42,13 +42,32 @@ export class VisualizerEngine {
   frameCount = 0
   lastTime = performance.now()
 
+  private getRenderSize() {
+    const fullscreenEl = document.fullscreenElement as HTMLElement | null
+    if (fullscreenEl) {
+      const rect = fullscreenEl.getBoundingClientRect()
+      if (rect.width > 0 && rect.height > 0) {
+        return { w: Math.round(rect.width), h: Math.round(rect.height) }
+      }
+    }
+    const canvasRect = this.renderer.domElement.getBoundingClientRect()
+    if (canvasRect.width > 0 && canvasRect.height > 0) {
+      return { w: Math.round(canvasRect.width), h: Math.round(canvasRect.height) }
+    }
+    return {
+      w: this.renderer.domElement.clientWidth || document.documentElement.clientWidth || window.innerWidth,
+      h: this.renderer.domElement.clientHeight || document.documentElement.clientHeight || window.innerHeight,
+    }
+  }
+
   constructor(canvas: HTMLCanvasElement) {
-    const width = canvas.clientWidth || window.innerWidth
-    const height = canvas.clientHeight || window.innerHeight
+    const rect = canvas.getBoundingClientRect()
+    const width = Math.round(rect.width) || canvas.clientWidth || document.documentElement.clientWidth || window.innerWidth
+    const height = Math.round(rect.height) || canvas.clientHeight || document.documentElement.clientHeight || window.innerHeight
 
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' })
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
-    this.renderer.setSize(width, height)
+    this.renderer.setSize(width, height, false)
     this.renderer.setClearColor(0x000000, 0)
     this.renderer.autoClear = true
 
@@ -95,8 +114,7 @@ export class VisualizerEngine {
     this.camera.position.set(0, 0, 2.5)
     this.controls.reset()
 
-    const width = this.renderer.domElement.clientWidth || window.innerWidth
-    const height = this.renderer.domElement.clientHeight || window.innerHeight
+    const { w: width, h: height } = this.getRenderSize()
     this.camera.aspect = width / height
     this.camera.updateProjectionMatrix()
     this.uniforms.uResolution.value.set(width, height)
@@ -482,10 +500,7 @@ export class VisualizerEngine {
   }
 
   onResize() {
-    const canvas = this.renderer.domElement
-    const inFullscreen = !!document.fullscreenElement
-    const w = inFullscreen ? window.innerWidth : (canvas.clientWidth || window.innerWidth)
-    const h = inFullscreen ? window.innerHeight : (canvas.clientHeight || window.innerHeight)
+    const { w, h } = this.getRenderSize()
     if (w <= 0 || h <= 0) return
     this.camera.aspect = w / h
     this.camera.updateProjectionMatrix()

@@ -14,10 +14,11 @@ function App() {
 
   const toggleFullscreen = useCallback(async () => {
     try {
+      const target = containerRef.current
       if (document.fullscreenElement) {
         await document.exitFullscreen()
-      } else {
-        await document.documentElement.requestFullscreen()
+      } else if (target) {
+        await target.requestFullscreen()
       }
     } catch {
       console.warn('Fullscreen not supported')
@@ -27,12 +28,6 @@ function App() {
   useEffect(() => {
     const onFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement)
-      // Force canvas resize after fullscreen layout settles
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setTimeout(() => window.dispatchEvent(new Event('resize')), 150)
-        })
-      })
     }
     document.addEventListener('fullscreenchange', onFullscreenChange)
     return () => document.removeEventListener('fullscreenchange', onFullscreenChange)
@@ -49,7 +44,7 @@ function App() {
   return (
     <div
       ref={containerRef}
-      className={`overflow-hidden bg-[#0a0e14] relative h-screen w-screen`}
+      className="overflow-hidden bg-[#0a0e14] fixed inset-0"
     >
       <Visualizer
         mode={mode}
@@ -101,7 +96,7 @@ function App() {
       {isFullscreen && (
         <button
           onClick={toggleFullscreen}
-          className="fixed top-4 right-4 z-50 p-2 rounded-lg bg-black/50 hover:bg-black/70 text-white/80 backdrop-blur-sm"
+          className="absolute top-4 right-4 z-50 p-2 rounded-lg bg-black/50 hover:bg-black/70 text-white/80 backdrop-blur-sm"
           title="Exit fullscreen (ESC)"
           aria-label="Exit fullscreen"
         >

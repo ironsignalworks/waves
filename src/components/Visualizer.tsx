@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useRef } from 'react'
 import type { VizMode } from '../lib/VisualizerEngine'
 import { VisualizerEngine } from '../lib/VisualizerEngine'
 
@@ -13,22 +13,9 @@ type Props = {
 
 
 function VisualizerInner(props: Props) {
-  const { mode, level, frequencyData, isFullscreen, inputSource } = props
+  const { mode, level, frequencyData, inputSource } = props
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
-  const [fullscreenSize, setFullscreenSize] = useState({ w: 0, h: 0 })
-
-  useEffect(() => {
-    if (!isFullscreen) return
-    const update = () => setFullscreenSize({ w: window.innerWidth, h: window.innerHeight })
-    update()
-    const t = setTimeout(update, 150)
-    window.addEventListener('resize', update)
-    return () => {
-      clearTimeout(t)
-      window.removeEventListener('resize', update)
-    }
-  }, [isFullscreen])
   const engineRef = useRef<VisualizerEngine | null>(null)
   const rafRef = useRef<number | null>(null)
 
@@ -75,14 +62,8 @@ function VisualizerInner(props: Props) {
     }
   }, [loop])
 
-  const fullscreenStyle = isFullscreen && fullscreenSize.h > 0
-    ? { width: fullscreenSize.w, height: fullscreenSize.h, minHeight: fullscreenSize.h }
-    : isFullscreen
-      ? { width: '100vw', height: '100vh', minHeight: '100vh' }
-      : undefined
-
   return (
-    <div ref={wrapperRef} className={isFullscreen ? 'fixed inset-0' : 'absolute inset-0 w-full h-full'} style={fullscreenStyle}>
+    <div ref={wrapperRef} className="absolute inset-0 w-full h-full">
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full block"
