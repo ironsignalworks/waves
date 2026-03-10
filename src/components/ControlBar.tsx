@@ -1,4 +1,4 @@
-import { memo, useRef } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { MODE_INFO } from '../lib/VisualizerEngine'
 import type { VizMode } from '../lib/VisualizerEngine'
 
@@ -46,7 +46,28 @@ export const ControlBar = memo(function ControlBar({
   isFullscreen,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const modeMenuRef = useRef<HTMLDivElement>(null)
+  const [isModeMenuOpen, setIsModeMenuOpen] = useState(false)
   const modes = Object.entries(MODE_INFO) as [VizMode, { label: string; description: string }][]
+  const selectedMode = modes.find(([id]) => id === mode)?.[1].label ?? 'Mode'
+
+  useEffect(() => {
+    if (!isModeMenuOpen) return
+    const onPointerDown = (event: MouseEvent) => {
+      if (!modeMenuRef.current?.contains(event.target as Node)) {
+        setIsModeMenuOpen(false)
+      }
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsModeMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [isModeMenuOpen])
 
   return (
     <div className="absolute bottom-4 left-4 right-4 flex justify-center z-10">
@@ -91,15 +112,59 @@ export const ControlBar = memo(function ControlBar({
             </span>
           </>
         )}
-        <select
-          value={mode}
-          onChange={(e) => onSetMode(e.target.value as VizMode)}
-          className="px-3 py-1.5 rounded-lg bg-gray-900/95 text-white text-sm font-mono border border-white/20"
-        >
-          {modes.map(([id, { label }]) => (
-            <option key={id} value={id}>{label}</option>
-          ))}
-        </select>
+        <div className="relative" ref={modeMenuRef}>
+          <button
+            type="button"
+            onClick={() => setIsModeMenuOpen((open) => !open)}
+            className="min-w-[170px] flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg bg-black/40 text-white text-sm font-mono border border-white/10 hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-white/30 focus:border-white/30 transition-colors"
+            aria-haspopup="listbox"
+            aria-expanded={isModeMenuOpen}
+            aria-label="Select visualization mode"
+          >
+            <span>{selectedMode}</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className={`text-white/70 transition-transform ${isModeMenuOpen ? 'rotate-180' : ''}`}
+              aria-hidden="true"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+          {isModeMenuOpen && (
+            <div
+              role="listbox"
+              aria-label="Visualization modes"
+              className="absolute left-0 bottom-full mb-2 z-30 min-w-[170px] max-h-64 overflow-auto rounded-lg bg-black/85 backdrop-blur-sm border border-white/10 p-1 shadow-xl"
+            >
+              {modes.map(([id, { label }]) => {
+                const isActive = id === mode
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => {
+                      onSetMode(id)
+                      setIsModeMenuOpen(false)
+                    }}
+                    className={`w-full text-left px-2.5 py-1.5 rounded-md text-sm font-mono transition-colors ${
+                      isActive ? 'bg-white/20 text-white' : 'text-gray-200 hover:bg-white/10'
+                    }`}
+                    role="option"
+                    aria-selected={isActive}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <label className="text-xs font-mono text-gray-400">Vol</label>
           <input
