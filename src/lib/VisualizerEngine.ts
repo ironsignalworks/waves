@@ -41,6 +41,11 @@ export class VisualizerEngine {
   fps = 60
   frameCount = 0
   lastTime = performance.now()
+  baseDistance = 2.5
+  zoom = 1
+  randomEnabled = false
+  randomClock = 0
+  resolution: 'low' | 'high' = 'high'
 
   private getRenderSize() {
     const fullscreenEl = document.fullscreenElement as HTMLElement | null
@@ -66,7 +71,7 @@ export class VisualizerEngine {
     const height = Math.round(rect.height) || canvas.clientHeight || document.documentElement.clientHeight || window.innerHeight
 
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' })
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
+    this.setResolution('high')
     this.renderer.setSize(width, height, false)
     this.renderer.setClearColor(0x000000, 0)
     this.renderer.autoClear = true
@@ -76,6 +81,7 @@ export class VisualizerEngine {
 
     this.camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 100)
     this.camera.position.set(0, 0, 2.5)
+    this.baseDistance = this.camera.position.length()
 
     this.uniforms.uResolution.value.set(width, height)
 
@@ -112,6 +118,7 @@ export class VisualizerEngine {
 
     this.scene.fog = new THREE.FogExp2(0x000000, 0.15)
     this.camera.position.set(0, 0, 2.5)
+    this.baseDistance = this.camera.position.length()
     this.controls.reset()
 
     const { w: width, h: height } = this.getRenderSize()
@@ -132,6 +139,38 @@ export class VisualizerEngine {
     }
 
     if (this.visualObject) this.scene.add(this.visualObject)
+  }
+
+  setZoom(zoom: number) {
+    this.zoom = THREE.MathUtils.clamp(zoom, 0.4, 3)
+    const dir = this.camera.position.clone().normalize()
+    const dist = this.baseDistance * this.zoom
+    this.camera.position.copy(dir.multiplyScalar(dist))
+    this.camera.updateProjectionMatrix()
+  }
+
+  setRandomEnabled(enabled: boolean) {
+    this.randomEnabled = enabled
+    if (!enabled) {
+      this.targetBloomStrength = 0.8
+      this.controls.autoRotateSpeed = 0.3
+      this.setZoom(this.zoom)
+    } else {
+      this.randomClock = 0
+    }
+  }
+
+  setResolution(res: 'low' | 'high') {
+    this.resolution = res
+    const dpr = res === 'high' ? Math.min(window.devicePixelRatio || 1, 2) : 1
+    this.renderer.setPixelRatio(dpr)
+    const { w, h } = this.getRenderSize()
+    if (w > 0 && h > 0) {
+      this.renderer.setSize(w, h, false)
+      this.uniforms.uResolution.value.set(w, h)
+      this.composer?.setPixelRatio(dpr)
+      this.composer?.setSize(w, h)
+    }
   }
 
   private disposeObject(obj: THREE.Object3D) {
@@ -444,6 +483,15 @@ export class VisualizerEngine {
     this.uniforms.uTime.value += dt * 2
     this.uniforms.uLevel.value = Math.min(1, level * 1.5)
 
+    if (this.randomEnabled) {
+      this.randomClock += dt
+      const t = this.randomClock
+      const zoomWave = 1.2 + Math.sin(t * 0.4) * 0.35 + level * 0.4
+      this.setZoom(zoomWave)
+      this.controls.autoRotateSpeed = 0.2 + Math.sin(t * 0.25) * 0.35
+      this.targetBloomStrength = 0.7 + Math.abs(Math.sin(t * 0.6)) * 0.6
+    }
+
     if (frequencyData && frequencyData.length > 0) {
       const bands = this.uniforms.uBands.value
       bands.fill(0)
@@ -504,7 +552,7 @@ export class VisualizerEngine {
     if (w <= 0 || h <= 0) return
     this.camera.aspect = w / h
     this.camera.updateProjectionMatrix()
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    const dpr = this.resolution === 'high' ? Math.min(window.devicePixelRatio || 1, 2) : 1
     this.renderer.setPixelRatio(dpr)
     this.renderer.setSize(w, h, false)
     this.uniforms.uResolution.value.set(w, h)

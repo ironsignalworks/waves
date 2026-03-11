@@ -13,9 +13,12 @@ Waves is a web-based audio visualizer that turns music and ambient sound into dy
 | Feature | Description |
 |---------|-------------|
 | **9 Visualization Modes** | Sphere, Waveform, Bars, Tunnel, Galaxy, Fractals, Water, Texture, Melt |
-| **Dual Audio Input** | Microphone capture or upload any audio file |
+| **Dual Audio Input** | Microphone capture or upload any audio file (mic is visual-only; no monitor/feedback) |
+| **Auto Motion** | Optional Auto mode that animates camera, zoom, and bloom while keeping the current visualization mode |
+| **Zoom & Resolution Controls** | Dedicated zoom controls and Low/High resolution toggle for balancing quality vs performance |
+| **Mode Browser** | Dropdown plus “Next” button for quickly cycling through modes |
 | **WebGL Rendering** | Hardware-accelerated 3D with Unreal Bloom post-processing |
-| **Responsive** | Fullscreen support, adapts to any screen size |
+| **Responsive UI** | Mobile-friendly control bar, fullscreen support, adapts to any screen size |
 | **Zero Dependencies** | Runs client-side only; no backend or sign-in needed |
 
 ---
@@ -65,7 +68,7 @@ Configure **Settings → Pages → Source** to use the `gh-pages` branch (or Git
 - **React 18** + TypeScript
 - **Three.js** - WebGL rendering, EffectComposer, UnrealBloomPass
 - **Vite** - Build tooling
-- **Tailwind CSS** - Styling
+- **Tailwind CSS** - Styling and responsive layout for the React UI controls
 - **Web Audio API** - Mic input, FFT analysis, file playback
 
 ---

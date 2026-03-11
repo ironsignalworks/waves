@@ -9,11 +9,14 @@ type Props = {
   volume: number
   isFullscreen?: boolean
   inputSource: 'none' | 'mic' | 'file'
+  zoom: number
+  isRandom: boolean
+  resolution: 'low' | 'high'
 }
 
 
 function VisualizerInner(props: Props) {
-  const { mode, level, frequencyData, inputSource } = props
+  const { mode, level, frequencyData, inputSource, zoom, isRandom, resolution } = props
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const engineRef = useRef<VisualizerEngine | null>(null)
@@ -24,6 +27,9 @@ function VisualizerInner(props: Props) {
     const container = canvas?.parentElement
     if (!canvas) return
     engineRef.current = new VisualizerEngine(canvas)
+    engineRef.current.setZoom(zoom)
+    engineRef.current.setRandomEnabled(isRandom)
+    engineRef.current.setResolution(resolution)
     // ResizeObserver catches fullscreen/container size changes that window resize misses
     const ro = container
       ? new ResizeObserver(() => {
@@ -38,6 +44,18 @@ function VisualizerInner(props: Props) {
       engineRef.current = null
     }
   }, [])
+
+  useEffect(() => {
+    engineRef.current?.setZoom(zoom)
+  }, [zoom])
+
+  useEffect(() => {
+    engineRef.current?.setRandomEnabled(isRandom)
+  }, [isRandom])
+
+  useEffect(() => {
+    engineRef.current?.setResolution(resolution)
+  }, [resolution])
 
   useEffect(() => {
     engineRef.current?.setMode(mode)
@@ -70,13 +88,6 @@ function VisualizerInner(props: Props) {
         style={{ display: 'block', width: '100%', height: '100%' }}
         aria-label="Waves Visualizer"
       />
-      {!level && inputSource === 'none' && (
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-6 text-center opacity-60">
-          <p className="text-sm text-gray-400 font-mono">
-            Click Mic or select a file to start
-          </p>
-        </div>
-      )}
     </div>
   )
 }

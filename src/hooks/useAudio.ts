@@ -75,15 +75,20 @@ export function useAudio() {
     setFrequencyData(undefined)
   }, [])
 
-  const connectSource = useCallback((node: MediaStreamAudioSourceNode | MediaElementAudioSourceNode) => {
-    sourceRef.current?.disconnect()
-    const { analyser, gainNode } = createAnalyser()
-    const ctx = ctxRef.current!
-    node.connect(gainNode)
-    gainNode.connect(analyser)
-    analyser.connect(ctx.destination)
-    sourceRef.current = node
-  }, [createAnalyser])
+  const connectSource = useCallback(
+    (node: MediaStreamAudioSourceNode | MediaElementAudioSourceNode, { monitorOutput = true } = {}) => {
+      sourceRef.current?.disconnect()
+      const { analyser, gainNode } = createAnalyser()
+      const ctx = ctxRef.current!
+      node.connect(gainNode)
+      gainNode.connect(analyser)
+      if (monitorOutput) {
+        analyser.connect(ctx.destination)
+      }
+      sourceRef.current = node
+    },
+    [createAnalyser],
+  )
 
   const toggleMic = useCallback(async () => {
     setError(null)
@@ -104,7 +109,8 @@ export function useAudio() {
       const ctx = initContext()
       await ctx.resume()
       const source = ctx.createMediaStreamSource(stream)
-      connectSource(source)
+      // Do not route mic audio to speakers to avoid feedback
+      connectSource(source, { monitorOutput: false })
       setIsMicActive(true)
       setInputSource('mic')
       setIsPlaying(true)
@@ -140,7 +146,7 @@ export function useAudio() {
     audio.volume = volume
     const ctx = initContext()
     const source = ctx.createMediaElementSource(audio)
-    connectSource(source)
+    connectSource(source, { monitorOutput: true })
     audio.onloadedmetadata = () => setDuration(audio.duration)
     audio.ontimeupdate = () => setCurrentTime(audio.currentTime)
     audio.onended = () => {

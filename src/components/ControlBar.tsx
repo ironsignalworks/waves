@@ -11,14 +11,22 @@ type Props = {
   currentTime: number
   duration: number
   mode: VizMode
+  zoom: number
+  isRandom: boolean
+  resolution: 'low' | 'high'
   onToggleMic: () => void
   onSelectFile: (file: File | null) => void
   onTogglePlayPause: () => void
   onSetVolume: (v: number) => void
   onSetMode: (m: VizMode) => void
+  onNextMode: () => void
   onReset: () => void
   onToggleFullscreen: () => void
   isFullscreen: boolean
+  onZoomIn: () => void
+  onZoomOut: () => void
+  onToggleRandom: () => void
+  onToggleResolution: () => void
 }
 
 function formatTime(s: number) {
@@ -36,14 +44,22 @@ export const ControlBar = memo(function ControlBar({
   currentTime,
   duration,
   mode,
+   zoom,
+   isRandom,
+  resolution,
   onToggleMic,
   onSelectFile,
   onTogglePlayPause,
   onSetVolume,
   onSetMode,
+  onNextMode,
   onReset,
   onToggleFullscreen,
   isFullscreen,
+  onZoomIn,
+  onZoomOut,
+  onToggleRandom,
+  onToggleResolution,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const modeMenuRef = useRef<HTMLDivElement>(null)
@@ -71,12 +87,13 @@ export const ControlBar = memo(function ControlBar({
 
   return (
     <div className="absolute inset-x-3 bottom-3 sm:inset-x-4 sm:bottom-4 flex justify-center z-10 pointer-events-none">
-      <div className="pointer-events-auto w-full max-w-xl sm:max-w-3xl flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-black/60 backdrop-blur-sm border border-white/10">
-        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+      <div className="pointer-events-auto w-full max-w-xl sm:max-w-3xl rounded-xl bg-black/70 backdrop-blur-sm border border-white/10 px-2 sm:px-2.5 py-1.5 flex flex-col gap-1">
+        {/* Row 1: sources + mode */}
+        <div className="flex w-full items-center gap-1.5 flex-wrap sm:flex-nowrap">
           <button
             onClick={onToggleMic}
             disabled={inputSource === 'file'}
-            className={`px-3 py-1.5 rounded-lg text-sm font-mono transition-colors ${
+            className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-mono min-w-[72px] sm:min-w-[80px] text-center transition-colors ${
               isMicActive ? 'bg-green-600 text-white' : 'bg-white/10 hover:bg-white/20'
             }`}
           >
@@ -85,7 +102,7 @@ export const ControlBar = memo(function ControlBar({
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={inputSource === 'mic'}
-            className={`px-3 py-1.5 rounded-lg text-sm font-mono transition-colors ${
+            className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-mono transition-colors ${
               inputSource === 'file' ? 'bg-blue-600 text-white' : 'bg-white/10 hover:bg-white/20'
             }`}
           >
@@ -98,106 +115,168 @@ export const ControlBar = memo(function ControlBar({
             className="hidden"
             onChange={(e) => onSelectFile(e.target.files?.[0] ?? null)}
           />
-        </div>
-        {inputSource === 'file' && (
-          <div className="flex items-center gap-2 text-xs sm:text-[13px] font-mono text-gray-300 w-full sm:w-auto justify-between sm:justify-start">
-            <button
-              onClick={onTogglePlayPause}
-              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs sm:text-sm"
-            >
-              {isPlaying ? 'Pause' : 'Play'}
-            </button>
-            <span className="whitespace-nowrap">
-              {formatTime(currentTime)} / {formatTime(duration)}
-            </span>
-          </div>
-        )}
-        <div className="relative w-full sm:w-auto" ref={modeMenuRef}>
-          <button
-            type="button"
-            onClick={() => setIsModeMenuOpen((open) => !open)}
-            className="w-full sm:min-w-[170px] flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg bg-black/40 text-white text-xs sm:text-sm font-mono border border-white/10 hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-white/30 focus:border-white/30 transition-colors"
-            aria-haspopup="listbox"
-            aria-expanded={isModeMenuOpen}
-            aria-label="Select visualization mode"
-          >
-            <span>{selectedMode}</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className={`text-white/70 transition-transform ${isModeMenuOpen ? 'rotate-180' : ''}`}
-              aria-hidden="true"
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
-          {isModeMenuOpen && (
-            <div
-              role="listbox"
-              aria-label="Visualization modes"
-              className="absolute left-0 right-0 sm:right-auto bottom-full mb-2 z-30 min-w-[170px] max-h-64 overflow-auto rounded-lg bg-black/90 backdrop-blur-sm border border-white/10 p-1 shadow-xl"
-            >
-              {modes.map(([id, { label }]) => {
-                const isActive = id === mode
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => {
-                      onSetMode(id)
-                      setIsModeMenuOpen(false)
-                    }}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-md text-sm font-mono transition-colors ${
-                      isActive ? 'bg-white/20 text-white' : 'text-gray-200 hover:bg-white/10'
-                    }`}
-                    role="option"
-                    aria-selected={isActive}
-                  >
-                    {label}
-                  </button>
-                )
-              })}
+          {inputSource === 'file' && (
+            <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-mono text-gray-300">
+              <button
+                onClick={onTogglePlayPause}
+                className="px-2.5 py-1 rounded-md bg-white/10 hover:bg-white/20 text-[10px] sm:text-xs"
+              >
+                {isPlaying ? 'Pause' : 'Play'}
+              </button>
+              <span className="whitespace-nowrap opacity-80">
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </span>
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
-          <label className="text-[11px] sm:text-xs font-mono text-gray-400">Vol</label>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={volume * 100}
-            onChange={(e) => onSetVolume(Number(e.target.value) / 100)}
-            className="w-24 sm:w-20 h-1 rounded-full bg-white/20 accent-green-500"
-          />
-          <span className="text-[11px] sm:text-xs font-mono w-8 text-right">
-            {Math.round(volume * 100)}
-          </span>
+
+        {/* Row 2: controls / utility */}
+        <div className="flex w-full items-center gap-1.5 justify-between flex-wrap sm:flex-nowrap">
+          <div className="relative flex items-center gap-1 min-w-[150px] sm:min-w-[180px]" ref={modeMenuRef}>
+            <button
+              type="button"
+              onClick={() => setIsModeMenuOpen((open) => !open)}
+              className="flex-1 flex items-center justify-between gap-2 px-2.5 py-1 rounded-md bg-black/40 text-white text-[11px] sm:text-xs font-mono border border-white/10 hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-white/30 focus:border-white/30 transition-colors"
+              aria-haspopup="listbox"
+              aria-expanded={isModeMenuOpen}
+              aria-label="Select visualization mode"
+            >
+              <span className="truncate">{selectedMode}</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className={`text-white/70 transition-transform ${isModeMenuOpen ? 'rotate-180' : ''}`}
+                aria-hidden="true"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            {isModeMenuOpen && (
+              <div
+                role="listbox"
+                aria-label="Visualization modes"
+                className="absolute left-0 right-0 bottom-full mb-1.5 z-30 max-h-56 overflow-auto rounded-lg bg-black/90 backdrop-blur-sm border border-white/10 p-1 shadow-xl"
+              >
+                {modes.map(([id, { label }]) => {
+                  const isActive = id === mode
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => {
+                        onSetMode(id)
+                        setIsModeMenuOpen(false)
+                      }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-md text-sm font-mono transition-colors ${
+                        isActive ? 'bg-white/20 text-white' : 'text-gray-200 hover:bg-white/10'
+                      }`}
+                      role="option"
+                      aria-selected={isActive}
+                    >
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={onNextMode}
+            className="px-2.5 py-1 rounded-md bg-white/10 hover:bg-white/20 text-[10px] sm:text-[11px] font-mono flex-shrink-0"
+            title="Next mode"
+          >
+            Next
+          </button>
+
+          <div className="flex items-center gap-1.5 ml-auto">
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] sm:text-[11px] font-mono text-gray-400">Zoom</span>
+              <button
+                type="button"
+                onClick={onZoomOut}
+                className="w-6 h-6 flex items-center justify-center rounded-md bg-white/10 hover:bg-white/20 text-[10px] font-mono"
+                title="Zoom out"
+              >
+                -
+              </button>
+              <button
+                type="button"
+                onClick={onZoomIn}
+                className="w-6 h-6 flex items-center justify-center rounded-md bg-white/10 hover:bg-white/20 text-[10px] font-mono"
+                title="Zoom in"
+              >
+                +
+              </button>
+            </div>
+            <div className="hidden sm:flex items-center gap-1.5">
+              <span className="text-[10px] sm:text-[11px] font-mono text-gray-400">Vol</span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={volume * 100}
+                onChange={(e) => onSetVolume(Number(e.target.value) / 100)}
+                className="w-20 h-1 rounded-full bg-white/20 accent-green-500"
+              />
+            </div>
+          </div>
+          <div className="flex sm:hidden items-center gap-1.5 ml-2">
+            <span className="text-[10px] font-mono text-gray-400">Vol</span>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={volume * 100}
+              onChange={(e) => onSetVolume(Number(e.target.value) / 100)}
+              className="w-24 h-1 rounded-full bg-white/20 accent-green-500"
+            />
+          </div>
+          <div className="flex items-center gap-1.5 ml-auto">
+            <button
+            type="button"
+            onClick={onToggleResolution}
+            className="px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-[10px] sm:text-[11px] font-mono flex-shrink-0"
+            title="Toggle visual resolution"
+          >
+            Res: {resolution === 'high' ? 'High' : 'Low'}
+            </button>
+            <button
+            onClick={onToggleRandom}
+            className={`px-2 py-1 rounded-md text-[10px] sm:text-xs flex-shrink-0 ${
+              isRandom ? 'bg-purple-600 text-white' : 'bg-white/10 hover:bg-white/20'
+            }`}
+            title="Toggle automatic motion and mode changes"
+          >
+            Auto
+            </button>
+            <button
+            onClick={onToggleFullscreen}
+            className="p-1.5 rounded-md bg-white/10 hover:bg-white/20 flex-shrink-0"
+            title={isFullscreen ? 'Exit fullscreen (ESC)' : 'Fullscreen'}
+            aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+          >
+            {isFullscreen ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3" /></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
+            )}
+            </button>
+            <button
+            onClick={onReset}
+            className="px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-[10px] sm:text-xs flex-shrink-0"
+            title="Reset"
+          >
+            Reset
+            </button>
+          </div>
         </div>
-        <button
-          onClick={onToggleFullscreen}
-          className="p-2 rounded-lg bg-white/10 hover:bg-white/20 flex-shrink-0"
-          title={isFullscreen ? 'Exit fullscreen (ESC)' : 'Fullscreen'}
-          aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-        >
-          {isFullscreen ? (
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3" /></svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
-          )}
-        </button>
-        <button
-          onClick={onReset}
-          className="px-2 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs sm:text-sm flex-shrink-0"
-          title="Reset"
-        >
-          Reset
-        </button>
       </div>
     </div>
   )

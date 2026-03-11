@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.1.0] - 2026-03-10
+
+### Added
+
+- Zoom in/out controls for the visualizer camera
+- Resolution toggle (`Res: High/Low`) to switch between high-fidelity and performance modes
+- Auto mode that animates camera motion, zoom, and bloom while staying on the current visualization mode
+- Mode cycle button (`Next`) alongside the mode dropdown
+- About overlay with usage tips and project description
+
+### Changed
+
+- Reworked control bar into a compact, mobile-friendly React/Tailwind layout:
+  - Two-row, multi-column design that adapts between small and large screens
+  - Smaller buttons, tighter spacing, and clearer groupings for inputs, modes, and utilities
+- Updated fullscreen handling to work more reliably on mobile browsers (including WebKit-prefixed APIs)
+- Microphone input is now visual-only (no audio monitor to speakers) to avoid feedback loops
+
+---
+
 ## [1.0.0] - 2025-03-09
 
 ### Added
