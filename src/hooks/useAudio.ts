@@ -5,7 +5,7 @@ export function useAudio() {
   const [isMicActive, setIsMicActive] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [fileName, setFileName] = useState<string | null>(null)
-  const [volume, setVolume] = useState(0.7)
+  const DEFAULT_VOLUME = 0.7
   const GAIN = 0.5
   const [level, setLevel] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
@@ -35,11 +35,11 @@ export function useAudio() {
     analyser.fftSize = 512
     analyser.smoothingTimeConstant = 0.8
     const gainNode = ctx.createGain()
-    gainNode.gain.value = volume * GAIN * 4
+    gainNode.gain.value = DEFAULT_VOLUME * GAIN * 4
     analyserRef.current = analyser
     gainRef.current = gainNode
     return { analyser, gainNode }
-  }, [initContext, volume])
+  }, [initContext])
 
   const updateLevelAndFreq = useCallback(() => {
     if (!analyserRef.current) return 0
@@ -143,7 +143,7 @@ export function useAudio() {
     const url = URL.createObjectURL(file)
     const audio = new Audio(url)
     mediaRef.current = audio
-    audio.volume = volume
+    audio.volume = DEFAULT_VOLUME
     const ctx = initContext()
     const source = ctx.createMediaElementSource(audio)
     connectSource(source, { monitorOutput: true })
@@ -161,7 +161,7 @@ export function useAudio() {
       startLoop()
     }).catch(() => setError('Failed to play audio'))
     URL.revokeObjectURL(url)
-  }, [initContext, connectSource, volume, startLoop, stopLoop])
+  }, [initContext, connectSource, startLoop, stopLoop])
 
   const togglePlayPause = useCallback(() => {
     if (inputSource !== 'file' || !mediaRef.current) return
@@ -176,22 +176,16 @@ export function useAudio() {
     }
   }, [inputSource, startLoop, stopLoop])
 
-  useEffect(() => {
-    if (gainRef.current) gainRef.current.gain.value = volume * GAIN * 4
-  }, [volume])
-
   return {
     inputSource,
     isMicActive,
     isPlaying,
     fileName,
-    volume,
     level,
     currentTime,
     duration,
     frequencyData,
     error,
-    setVolume,
     toggleMic,
     selectFile,
     togglePlayPause,

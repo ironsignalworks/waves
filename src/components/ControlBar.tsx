@@ -7,7 +7,6 @@ type Props = {
   isMicActive: boolean
   fileName: string | null
   isPlaying: boolean
-  volume: number
   currentTime: number
   duration: number
   mode: VizMode
@@ -17,7 +16,6 @@ type Props = {
   onToggleMic: () => void
   onSelectFile: (file: File | null) => void
   onTogglePlayPause: () => void
-  onSetVolume: (v: number) => void
   onSetMode: (m: VizMode) => void
   onNextMode: () => void
   onReset: () => void
@@ -40,17 +38,14 @@ export const ControlBar = memo(function ControlBar({
   isMicActive,
   fileName,
   isPlaying,
-  volume,
   currentTime,
   duration,
   mode,
-   zoom,
-   isRandom,
+  isRandom,
   resolution,
   onToggleMic,
   onSelectFile,
   onTogglePlayPause,
-  onSetVolume,
   onSetMode,
   onNextMode,
   onReset,
@@ -87,13 +82,12 @@ export const ControlBar = memo(function ControlBar({
 
   return (
     <div className="absolute inset-x-3 bottom-3 sm:inset-x-4 sm:bottom-4 flex justify-center z-10 pointer-events-none">
-      <div className="pointer-events-auto w-full max-w-xl sm:max-w-3xl rounded-xl bg-black/70 backdrop-blur-sm border border-white/10 px-2 sm:px-2.5 py-1.5 flex flex-col gap-1">
-        {/* Row 1: sources + mode */}
-        <div className="flex w-full items-center gap-1.5 flex-wrap sm:flex-nowrap">
+      <div className="pointer-events-auto w-full max-w-[96vw] rounded-xl bg-black/70 backdrop-blur-sm border border-white/10 px-2 py-1.5">
+        <div className="flex w-full items-center gap-1.5 flex-nowrap overflow-x-auto whitespace-nowrap">
           <button
             onClick={onToggleMic}
             disabled={inputSource === 'file'}
-            className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-mono min-w-[72px] sm:min-w-[80px] text-center transition-colors ${
+            className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-mono min-w-[72px] text-center transition-colors flex-shrink-0 ${
               isMicActive ? 'bg-green-600 text-white' : 'bg-white/10 hover:bg-white/20'
             }`}
           >
@@ -102,7 +96,7 @@ export const ControlBar = memo(function ControlBar({
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={inputSource === 'mic'}
-            className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-mono transition-colors ${
+            className={`px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-mono transition-colors flex-shrink-0 ${
               inputSource === 'file' ? 'bg-blue-600 text-white' : 'bg-white/10 hover:bg-white/20'
             }`}
           >
@@ -116,7 +110,7 @@ export const ControlBar = memo(function ControlBar({
             onChange={(e) => onSelectFile(e.target.files?.[0] ?? null)}
           />
           {inputSource === 'file' && (
-            <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-mono text-gray-300">
+            <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-mono text-gray-300 flex-shrink-0">
               <button
                 onClick={onTogglePlayPause}
                 className="px-2.5 py-1 rounded-md bg-white/10 hover:bg-white/20 text-[10px] sm:text-xs"
@@ -128,11 +122,8 @@ export const ControlBar = memo(function ControlBar({
               </span>
             </div>
           )}
-        </div>
 
-        {/* Row 2: controls / utility */}
-        <div className="flex w-full items-center gap-1.5 justify-between flex-wrap sm:flex-nowrap">
-          <div className="relative flex items-center gap-1 min-w-[150px] sm:min-w-[180px]" ref={modeMenuRef}>
+          <div className="relative flex items-center gap-1 min-w-[120px] sm:min-w-[150px] flex-shrink-0" ref={modeMenuRef}>
             <button
               type="button"
               onClick={() => setIsModeMenuOpen((open) => !open)}
@@ -195,7 +186,7 @@ export const ControlBar = memo(function ControlBar({
             Next
           </button>
 
-          <div className="flex items-center gap-1.5 ml-auto">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
             <div className="flex items-center gap-1">
               <span className="text-[10px] sm:text-[11px] font-mono text-gray-400">Zoom</span>
               <button
@@ -215,30 +206,8 @@ export const ControlBar = memo(function ControlBar({
                 +
               </button>
             </div>
-            <div className="hidden sm:flex items-center gap-1.5">
-              <span className="text-[10px] sm:text-[11px] font-mono text-gray-400">Vol</span>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={volume * 100}
-                onChange={(e) => onSetVolume(Number(e.target.value) / 100)}
-                className="w-20 h-1 rounded-full bg-white/20 accent-green-500"
-              />
-            </div>
           </div>
-          <div className="flex sm:hidden items-center gap-1.5 ml-2">
-            <span className="text-[10px] font-mono text-gray-400">Vol</span>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={volume * 100}
-              onChange={(e) => onSetVolume(Number(e.target.value) / 100)}
-              className="w-24 h-1 rounded-full bg-white/20 accent-green-500"
-            />
-          </div>
-          <div className="flex items-center gap-1.5 ml-auto">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
             <button
             type="button"
             onClick={onToggleResolution}

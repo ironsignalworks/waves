@@ -6,7 +6,6 @@ type Props = {
   mode: VizMode
   level: number
   frequencyData?: Uint8Array
-  volume: number
   isFullscreen?: boolean
   inputSource: 'none' | 'mic' | 'file'
   zoom: number
@@ -16,7 +15,7 @@ type Props = {
 
 
 function VisualizerInner(props: Props) {
-  const { mode, level, frequencyData, inputSource, zoom, isRandom, resolution } = props
+  const { mode, level, frequencyData, zoom, isRandom, resolution } = props
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const engineRef = useRef<VisualizerEngine | null>(null)

@@ -66,11 +66,11 @@ function App() {
   }, [audio])
 
   const handleZoomIn = useCallback(() => {
-    setZoom((z) => Math.min(3, +(z + 0.15).toFixed(2)))
+    setZoom((z) => Math.max(0.4, +(z - 0.15).toFixed(2)))
   }, [])
 
   const handleZoomOut = useCallback(() => {
-    setZoom((z) => Math.max(0.4, +(z - 0.15).toFixed(2)))
+    setZoom((z) => Math.min(3, +(z + 0.15).toFixed(2)))
   }, [])
 
   const handleToggleRandom = useCallback(() => {
@@ -95,7 +95,6 @@ function App() {
         isFullscreen={isFullscreen}
         level={audio.level}
         frequencyData={audio.frequencyData}
-        volume={audio.volume}
         inputSource={audio.inputSource}
         zoom={zoom}
         isRandom={isRandom}
@@ -156,7 +155,6 @@ function App() {
         isMicActive={audio.isMicActive}
         fileName={audio.fileName}
         isPlaying={audio.isPlaying}
-        volume={audio.volume}
         currentTime={audio.currentTime}
         duration={audio.duration}
         mode={mode}
@@ -175,7 +173,6 @@ function App() {
         }}
         onSelectFile={audio.selectFile}
         onTogglePlayPause={audio.togglePlayPause}
-        onSetVolume={audio.setVolume}
         onSetMode={setMode}
         onNextMode={handleNextMode}
         onZoomIn={handleZoomIn}
