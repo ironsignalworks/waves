@@ -82,8 +82,8 @@ export const ControlBar = memo(function ControlBar({
 
   return (
     <div className="absolute inset-x-3 bottom-3 sm:inset-x-4 sm:bottom-4 flex justify-center z-10 pointer-events-none">
-      <div className="pointer-events-auto w-full max-w-[96vw] rounded-xl bg-black/70 backdrop-blur-sm border border-white/10 px-2 py-1.5">
-        <div className="flex w-full items-center gap-1.5 flex-nowrap overflow-x-auto whitespace-nowrap">
+      <div className="pointer-events-auto w-fit max-w-[calc(100vw-1.5rem)] sm:max-w-[calc(100vw-2rem)] overflow-x-auto rounded-xl bg-black/70 backdrop-blur-sm border border-white/10 px-2 py-1.5">
+        <div className="flex min-w-max items-center gap-1.5 flex-nowrap whitespace-nowrap">
           <button
             onClick={onToggleMic}
             disabled={inputSource === 'file'}
